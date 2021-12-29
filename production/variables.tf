@@ -1,6 +1,7 @@
 variable infra_env {
   type        = string
   description = "infrastructure environment"
+  default     = "production"
 }
 
 variable instance_size {
