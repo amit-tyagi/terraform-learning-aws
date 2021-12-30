@@ -1,0 +1,56 @@
+name: Terrafom Build Workflow
+
+# Controls when the action will run
+on:
+  # Triggers the workflows on push or pull requestes event but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run tis workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workfow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains the single job called "build"
+  build:
+    name: Build Phase
+    environment: development
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: 'us-east-1'
+    runs-on: ubuntu-latest
+
+    # Use the bash shell regardless whether the GitHub Actions
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./staging
+
+    # Steps represents the sequence of tasks that will be executed as part of the job
+    steps:
+
+      # Checkout your repository under $GITHUB_WORKSPACE, so you job can access it
+      - uses: actions/checkout@v2
+
+      # Setup the terraform
+      - uses: hashicorp/setup-terraform@v1
+
+      - name: Terraform Format
+        id: fmt
+        run: terraform fmt -check
+        continue-on-error: true
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color
